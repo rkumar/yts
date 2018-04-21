@@ -1,0 +1,8 @@
+*.torrent
+*.zip
+*.t
+tmp
+bak/
+*.bak
+*.sqlite
+*.log
