@@ -4,7 +4,7 @@
 #  Description: read a json file from yts containing 50 movies and insert into sqlite
 #       Author:  r kumar
 #         Date: 2018-04-03 - 12:13
-#  Last update: 2018-04-18 12:53
+#  Last update: 2018-04-22 15:08
 #      License: MIT License
 # ----------------------------------------------------------------------------- #
 # ISSUES 
@@ -47,7 +47,7 @@ def read_file_in_loop filename
     newhash.delete "imdb_code"
     if mov["genres"]
       #arr << mov["genres"].join(",") if mov["genres"]
-      newhash["genres"] = mov["genres"].join(",") if mov["genres"]
+      newhash["genres"] = mov["genres"].join(", ") if mov["genres"]
     else
       #arr << "-"
       newhash["genres"] = "-"
