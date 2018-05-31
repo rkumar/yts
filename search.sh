@@ -5,7 +5,7 @@
 #       Author: j kepler  http://github.com/mare-imbrium/canis/
 #         Date: 2018-04-09 - 09:01
 #      License: MIT
-#  Last update: 2018-04-19 08:41
+#  Last update: 2018-04-24 23:06
 # ----------------------------------------------------------------------------- #
 #  search.sh  Copyright (C) 2012-2018 j kepler
 # TODO add status to it so we can see movies of interest, seen, best, etc
@@ -14,26 +14,12 @@
 # so gnu coreutils override the old BSD ones
 export PATH="$(brew --prefix coreutils)/libexec/gnubin:/usr/local/bin:$PATH"
 # Set magic variables for current file & dir
-__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-__root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this
-__file="${__dir}/$(basename "${BASH_SOURCE[0]}")"
-__base="$(basename ${__file} .sh)"
 
-arg1="${1:-}"
 
 source ~/bin/sh_colors.sh
 # pdone pinfo perror preverse pdebug pverbose
-APPNAME=$( basename $0 )
-ext=${1:-"default value"}
-TODAY=$(date +"%Y-%m-%d-%H%M")
-curdir=$( basename $(pwd))
-#set -euo pipefail
-TAB=$'\t'
-#IFS=$'\n\t'
 
 
-
-ScriptVersion="1.0"
 
 #===  FUNCTION  ================================================================
 #         NAME:  usage
@@ -116,6 +102,8 @@ case "$1" in
         ;;
 esac
 done
+cd ~/work/projects/yts/
+
 if [[ $# -gt 0 ]]; then
     OPT_TITLE="$*"
     OPT_OPT=1
