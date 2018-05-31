@@ -19,6 +19,8 @@
 #      REVISION:  2018-04-03 12:53
 #===============================================================================
 # NOTE: the data has an uploaded date, we can check that, to see what is new
+# As of 2018-04-27 wget has been failing with SSL on this site and wikipedia.
+#  `curl` giving the same SSL problem.
 
 arg1="${1:-}"
 
@@ -100,7 +102,8 @@ cd /Users/rahul/work/projects/yts
 OUT=list-movies-${TODAY}.json
 GZ=${OUT}.gz
 
-wget -O $GZ https://yts.am/api/v2/list_movies.json?limit=50
+#wget -q -O $GZ https://yts.am/api/v2/list_movies.json?limit=50
+wget --no-check-certificate -O $GZ https://yts.am/api/v2/list_movies.json?limit=50
 gunzip $GZ
 
 
