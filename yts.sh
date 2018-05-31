@@ -5,7 +5,7 @@
 # 
 #         USAGE: ./yts.sh 
 # 
-#   DESCRIPTION: 
+#   DESCRIPTION: download files from yts in batches
 # 
 #       OPTIONS: ---
 #  REQUIREMENTS: ---
@@ -14,7 +14,7 @@
 #        AUTHOR: YOUR NAME (), 
 #  ORGANIZATION: 
 #       CREATED: 04/03/2018 09:46
-#      REVISION:  2018-04-03 10:59
+#      REVISION:  2018-04-21 20:37
 #===============================================================================
 
 #!/usr/bin/env bash
