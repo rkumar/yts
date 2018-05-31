@@ -4,7 +4,7 @@
 #       Author: j kepler  http://github.com/mare-imbrium/canis/
 #         Date: 2018-04-09 - 08:44
 #      License: MIT
-#  Last update: 2018-04-09 08:46
+#  Last update: 2018-04-21 20:36
 # ----------------------------------------------------------------------------- #
 #  YFF Copyright (C) 2012-2018 j kepler
 # This inserts all json files, so one usually clears the database before that.
@@ -34,7 +34,7 @@ echo "-------------------"
 echo "CURRENT DAILY FILES"
 echo "-------------------"
 
-for f in list-movies-*.json
+for f in ./json/list-movies-*.json
 do
     ls -l $f
     ./import.rb $f
