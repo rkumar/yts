@@ -7,7 +7,7 @@
 #       Author: j kepler  http://github.com/mare-imbrium/canis/
 #         Date: 2018-04-05 - 18:24
 #      License: MIT
-#  Last update: 2018-04-21 10:15
+#  Last update: 2018-05-29 08:25
 # ----------------------------------------------------------------------------- #
 #  YFF Copyright (C) 2012-2018 j kepler
 #
@@ -27,5 +27,12 @@ cat latest.txt >> id.tsv
 sort -u id.tsv | sponge id.tsv
 sort -n -k1 id.tsv | sponge id.tsv
 wc -l latest.txt id.tsv
+## remove duplicates keeping last line
+echo "removing duplicates keeping last line"
+awk '{ seen[$1]=$0} END{ for (ix in seen) print seen[ix];} ' id.tsv > new.tsv
+wc -l id.tsv new.tsv
+cp id.tsv id.tsv.bak
+mv new.tsv id.tsv
 
-echo "delete pending.txt now"
+echo "deleting pending.txt now"
+rm pending.txt
