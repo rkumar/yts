@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # Description: Browse YIFY database
-# Last update: 2018-05-20 12:08
+# Last update: 2018-06-09 14:55
 # 2018-03-19
 require 'umbra'
 require 'umbra/label'
@@ -330,7 +330,8 @@ begin
   @db.execute("ATTACH DATABASE ? AS imdb;", [ "/Volumes/Pacino/dziga_backup/rahul/Downloads/MOV/imdbdata/imdb.sqlite"])
 
   #query = "#{@query}, ms.status FROM #{@tablename} m, imdb.movie_status ms WHERE m.imdbid = ms.imdbid and ms.status != 'x'  ORDER BY m.rowid desc LIMIT 1000"
-  query = "#{@query} WHERE ms.status != 'x' or ms.status IS NULL  ORDER BY m.rowid desc LIMIT 1000"
+  #query = "#{@query} WHERE ms.status != 'x' or ms.status IS NULL  ORDER BY m.rowid desc LIMIT 1000"
+  query = "#{@query} WHERE ms.status != 'x' or ms.status IS NULL  ORDER BY m.rowid desc "
   #query = "#{@query} FROM #{@tablename} WHERE status is NULL or status != 'x' ORDER BY id desc LIMIT 1000"
   alist = get_data @db, query
 
@@ -366,11 +367,16 @@ begin
     #  the list after the bind_event
     lb.bind_event(:CHANGED) { |list| box.title = "#{list.list().size} rows"; box.touch; }
     lb.list = alist
+    lb.search_offset = 2
     def lb.value_of_row(line, ctr, state)
       #mark = mark_of_row(ctr, state)
       #"#{mark}%4s %4s %-50s %-3s %-s" % line[1,6]
       "%4s %4s %-50s %-3s %-s" % line[1,6]
     end
+    def lb.to_searchable(index)
+      value_of_row(self.list[index], index, nil)
+    end
+  
     def lb.color_of_row(index, state) # {{{
       arr = super
       if state == :NORMAL
