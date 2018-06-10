@@ -4,7 +4,7 @@
 #  Description: read a json file from yts containing 50 movies and insert into sqlite
 #       Author:  r kumar
 #         Date: 2018-04-03 - 12:13
-#  Last update: 2018-04-22 15:08
+#  Last update: 2018-06-05 12:51
 #      License: MIT License
 # ----------------------------------------------------------------------------- #
 # ISSUES 
@@ -23,7 +23,7 @@ dbname = "yify.sqlite"
 
 # --- some common stuff ---
 ## date in yyyy-mm-dd format
-today = Date.today.to_s
+#today = Date.today.to_s
 #now = Time.now.to_s
 # include? exist? each_pair split gsub
 
@@ -124,9 +124,9 @@ def table_upsert_hash db, table, array
 end
 
 def _process filename
-  File.open(filename).each { |line|
-    line = line.chomp
-  }
+  read_file_in_loop filename
+  require 'fileutils'
+  FileUtils.mv filename, 'json/'
 end
 
 
@@ -146,7 +146,7 @@ end
 
 if __FILE__ == $0
   #include Color
-  filename = nil
+  #filename = nil
   $opt_verbose = false
   $opt_debug = false
   $opt_quiet = false
@@ -173,6 +173,18 @@ if __FILE__ == $0
     p options if $opt_debug
     p ARGV if $opt_debug
 
+    files = nil
+    if ARGV.count == 0
+      files = Dir.glob("list-movies-*.json")
+      if files.count == 0
+        $stderr.puts "Can't find json files here"
+        exit 1
+      end
+    else
+      files = ARGV
+    end
+
+=begin
     # --- if processing just one file ---------
     filename=ARGV[0] || "list-movies-#{today}.json"
     unless File.exist? filename
@@ -181,13 +193,14 @@ if __FILE__ == $0
     end
     read_file_in_loop filename
     exit 0
+=end
 
     # OR 
     #
     # --- if processing multiple files ---------
-    if ARGV.size > 0
-      $stderr.puts "==> processing files: #{ARGV.size}" unless $opt_quiet
-      process_args ARGV
+    if files.size > 0
+      $stderr.puts "==> processing files: #{files.size}" unless $opt_quiet
+      process_args files
     else
       # passed as stdin
       $stderr.puts "   Expecting filenames passed as stdin " unless $opt_quiet
