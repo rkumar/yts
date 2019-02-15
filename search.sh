@@ -5,7 +5,7 @@
 #       Author: j kepler  http://github.com/mare-imbrium/canis/
 #         Date: 2018-04-09 - 09:01
 #      License: MIT
-#  Last update: 2018-04-24 23:06
+#  Last update: 2019-01-17 23:49
 # ----------------------------------------------------------------------------- #
 #  search.sh  Copyright (C) 2012-2018 j kepler
 # TODO add status to it so we can see movies of interest, seen, best, etc
@@ -38,6 +38,7 @@ function usage ()
   -h, --help       Display this message
   -v, --version    Display script version
   -V, --verbose    Display processing information
+  --cron           Not interactive
   --no-verbose     Suppress extra information
   --debug          Display debug information
 
@@ -106,6 +107,7 @@ cd ~/work/projects/yts/
 
 if [[ $# -gt 0 ]]; then
     OPT_TITLE="$*"
+    echo "setting title to $OPT_TITLE" 1>&2
     OPT_OPT=1
 fi
 if [[ -z $OPT_OPT ]]; then
@@ -117,9 +119,12 @@ if [[ -z $OPT_OPT ]]; then
     echo -n "Genre    :"
     read OPT_GENRE
 else
-    echo "Got $*" 1>&2
+        # red call/output picks up error anyway as output
+        #echo "Got $*" 1>&2
+        >&2 echo "Got $*"
     #echo "Got $1"
-    OPT_TITLE="$1"
+    #OPT_TITLE="$1"
+    #echo "xxx setting title to $OPT_TITLE"
 fi
 LIMIT=" LIMIT 100"
 if [[ -n "$OPT_TITLE" ]]; then
@@ -140,5 +145,14 @@ fi
 if [[ -n "$OPT_VERBOSE" ]]; then
     echo "QUERY: $QUERY"
 fi
-sqlite3 yify.sqlite "SELECT id, imdbid, title, year, genres FROM yify ${QUERY} $LIMIT" | column -t -s'|' > t.t
-most t.t
+sqlite3 yify.sqlite "SELECT id, imdbid, title, year, rating, genres, url FROM yify ${QUERY} $LIMIT" | column -t -s'|' > t.t
+if [[ -n $OPT_CRON ]]; then
+    cat t.t
+    exit 0
+fi
+if [[ -s "t.t" ]]; then
+    most t.t
+    wc -l t.t
+else
+    echo "No results "
+fi
