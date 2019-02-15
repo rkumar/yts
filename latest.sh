@@ -101,10 +101,28 @@ done
 cd /Users/rahul/work/projects/yts
 OUT=list-movies-${TODAY}.json
 GZ=${OUT}.gz
+date >> lastran.log
+echo "---" >> lastran.log
 
 #wget -q -O $GZ https://yts.am/api/v2/list_movies.json?limit=50
 wget --no-check-certificate -O $GZ https://yts.am/api/v2/list_movies.json?limit=50
+if [[ ! -s "$GZ" ]]; then
+    ## why isn't this happening  ? 2018-12-25 - 
+    echo "$GZ is blank" >> yts.log
+    rm $GZ
+    exit
+else
+    # added 2019-01-13 - 
+    echo "$GZ is NOT blank" >> yts.log
+    ls -l $GZ >> yts.log
+fi
+
+## just seeing if the zero byte file comes here 2018-12-25 - 09:54 
+date >> lastran.log
+ls -l $GZ >> lastran.log
+
 gunzip $GZ
+
 
 
 PENDING=pending.txt
@@ -124,4 +142,6 @@ else
     #cat t.new
 fi
 [[ -z "$OPT_CRON" ]] && echo "once you have updated id.tsv using append.sh, you can delete $PENDING"
+rm $PENDING
+./import.rb
 [[ -z "$OPT_CRON" ]] && echo "you must run ./import.rb $OUT"
