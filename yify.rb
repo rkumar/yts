@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # Description: Browse YIFY database
-# Last update: 2018-06-09 14:55
+# Last update: 2018-08-08 11:19
 # 2018-03-19
 require 'umbra'
 require 'umbra/label'
@@ -80,6 +80,29 @@ def update_status lb # {{{
   $log.debug "  update_status: get #{ret} "
   update_status_in_imdb(lb)
 end # }}}
+def main_menu lb
+  h = { :v => :view_details, :o => :view_in_browser, :D => :delete_row, :e => :edit_row, :s => :update_status , :t => :download_torrent , :u => :update_genre, :i => :view_imdb
+  }
+  m = Menu.new "Main Menu", h
+  ch = m.getkey
+  l = lb.list
+  case ch
+  when "v"
+    view_details(lb, @db)
+  when "o"
+    view_in_browser(lb)
+  when "t"
+    download_torrent(lb)
+  when "s"
+    update_status(lb)
+  when "i"
+    join_imdb(lb)
+  when "e"
+    edit_row(lb)
+  when "D"
+    delete_row(lb)
+  end
+end
 def sort_menu lb # {{{
   h = { :y => :year, :r => :rating, :t => :title, :i => :id, :n => "newest" }
   m = Menu.new "Sort Menu", h
@@ -194,14 +217,18 @@ def generic_edit data, columns # {{{
   return ret, array
 end # }}}
 def download_torrent lb # {{{
+  ## Am unable to connect to this URL, so it hangs. I need to copy URL and open in opera.
   index = lb.current_index
   id = lb.list[lb.current_index].first
-  rowdata = get_data(@db, "select title, year, torrent_url from #{@tablename} WHERE rowid = #{id}")
+  rowdata = get_data(@db, "select title, year, torrent_url , url from #{@tablename} WHERE rowid = #{id}")
   data = rowdata.first
-  title, year, torrent_url = data
+  title, year, torrent_url, url = data
   stub = "#{title}_#{year}.torrent".tr(' ','_').tr("'","_").gsub('&','_')
   $log.debug "  download_torrent: stub:: #{stub} "
 
+  alert "URL is #{url}. Open in opera"
+
+  if false
   if torrent_url
     res=%x{ wget --no-check-certificate -q -O #{stub} #{torrent_url} }
     $log.debug "  SYS : URL:#{torrent_url}"
@@ -214,6 +241,7 @@ def download_torrent lb # {{{
     end
   else
     alert("No url found. Check YIFY")
+  end
   end
 
 end # }}}
@@ -452,7 +480,8 @@ begin
     lb.bind_key(?D.getbyte(0), 'delete row') { delete_row(lb) }
     lb.bind_key('o', 'open in browser')      { view_in_browser(lb) }
     lb.bind_key('e', 'edit row')             { edit_row(lb) }
-    lb.bind_key('`', 'download torrent file'){ download_torrent(lb) }
+    #lb.bind_key('`', 'download torrent file'){ download_torrent(lb) }
+    lb.bind_key('`', 'main menu '){ main_menu(lb) }
     lb.bind_key('u', 'update genres'){ update_genre(lb) }
     searchb.command do # {{{
       # construct an sql statement using title, year and genre
