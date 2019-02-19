@@ -5,9 +5,13 @@
 #       Author: j kepler  http://github.com/mare-imbrium/canis/
 #         Date: 2018-04-09 - 09:01
 #      License: MIT
-#  Last update: 2019-02-19 12:47
+#  Last update: 2019-02-19 14:36
 # ----------------------------------------------------------------------------- #
 #  search.sh  Copyright (C) 2012-2018 j kepler
+# CHANGELOG ---
+# 2019-02-19 - can use imdbid as parameter
+# ------------
+# TODO SECTION --
 # TODO add status to it so we can see movies of interest, seen, best, etc
 # TODO option to ignore movies of a genre
 
