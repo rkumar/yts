@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#  Last update: 2019-02-15 12:37
+#  Last update: 2019-02-19 12:25
 
 ## import from a file named list-movies.json.
 ## I am not logner able to connect via cronjob to yts.ag to get the listing. So i have to
@@ -13,6 +13,7 @@ if [[ -f ${EFILE} ]]; then
     FILE="list-movies-${DATE}.json"
     echo "Renaming $EFILE to $FILE"
     cp $EFILE $FILE
+    date >> lastran.log
 fi
 ./import.rb
 if [[ -f ${EFILE} ]]; then
