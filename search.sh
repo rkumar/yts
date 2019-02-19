@@ -5,18 +5,17 @@
 #       Author: j kepler  http://github.com/mare-imbrium/canis/
 #         Date: 2018-04-09 - 09:01
 #      License: MIT
-#  Last update: 2019-01-17 23:49
+#  Last update: 2019-02-19 12:47
 # ----------------------------------------------------------------------------- #
 #  search.sh  Copyright (C) 2012-2018 j kepler
 # TODO add status to it so we can see movies of interest, seen, best, etc
 # TODO option to ignore movies of a genre
 
-# so gnu coreutils override the old BSD ones
-export PATH="$(brew --prefix coreutils)/libexec/gnubin:/usr/local/bin:$PATH"
-# Set magic variables for current file & dir
+## 2019-02-15 - replace t.t with tempfile due to folder action here
+TMPFILE=$( mktemp /tmp/example.XXXXXXXXXX ) || exit 1
 
 
-source ~/bin/sh_colors.sh
+#source ~/bin/sh_colors.sh
 # pdone pinfo perror preverse pdebug pverbose
 
 
@@ -74,6 +73,11 @@ case "$1" in
                      OPT_OPT=1
                      shift
                      ;;
+    --imdbid)   shift
+                     OPT_ID=$1
+                     OPT_OPT=1
+                     shift
+                     ;;
     -s|--status)   shift
                      OPT_STATUS=$1
                      OPT_OPT=1
@@ -106,8 +110,13 @@ done
 cd ~/work/projects/yts/
 
 if [[ $# -gt 0 ]]; then
-    OPT_TITLE="$*"
-    echo "setting title to $OPT_TITLE" 1>&2
+    # 2019-02-19 - check for imdbid
+    if [[ $1 = *tt[0-9][0-9]* ]]; then
+        OPT_ID=$1
+    else
+        OPT_TITLE="$*"
+        echo "setting title to $OPT_TITLE" 1>&2
+    fi
     OPT_OPT=1
 fi
 if [[ -z $OPT_OPT ]]; then
@@ -132,6 +141,9 @@ if [[ -n "$OPT_TITLE" ]]; then
 else
     QUERY="WHERE 1=1 "
 fi
+if [[ -n "$OPT_ID" ]]; then
+    QUERY="$QUERY AND IMDBID=\"$OPT_ID\" "
+fi
 if [[ -n "$OPT_YEAR" ]]; then
     QUERY="$QUERY AND YEAR=$OPT_YEAR "
 fi
@@ -145,14 +157,15 @@ fi
 if [[ -n "$OPT_VERBOSE" ]]; then
     echo "QUERY: $QUERY"
 fi
-sqlite3 yify.sqlite "SELECT id, imdbid, title, year, rating, genres, url FROM yify ${QUERY} $LIMIT" | column -t -s'|' > t.t
+sqlite3 yify.sqlite "SELECT id, imdbid, title, year, rating, genres, url FROM yify ${QUERY} $LIMIT" | column -t -s'|' > $TMPFILE
 if [[ -n $OPT_CRON ]]; then
-    cat t.t
+    cat $TMPFILE
     exit 0
 fi
-if [[ -s "t.t" ]]; then
-    most t.t
-    wc -l t.t
+if [[ -s "$TMPFILE" ]]; then
+    most $TMPFILE
+    wc -l $TMPFILE
 else
     echo "No results "
 fi
+\rm $TMPFILE
