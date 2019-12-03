@@ -4,10 +4,10 @@
 #  Description: read a json file from yts containing 50 movies and insert into sqlite
 #       Author:  r kumar
 #         Date: 2018-04-03 - 12:13
-#  Last update: 2018-06-05 12:51
+#  Last update: 2019-10-31 12:02
 #      License: MIT License
 # ----------------------------------------------------------------------------- #
-# ISSUES 
+# ISSUES
 #   The json file contains entries in reverse order of id, latest first. So while inserting
 #     I need to reverse it.
 #   The files often contains entries that have already been inserted, but with additional info
@@ -65,13 +65,13 @@ def read_file_in_loop filename
 end
 # actually since sometimes the data gets updated, we should insert and then update other fields
 def table_insert_hash db, table, array # {{{
-  $stderr.puts "inside table_insert_hash "
+  $stderr.puts "inside table_insert_hash " if $opt_verbose
   array.each do |hash|
     str = "INSERT OR IGNORE INTO #{table} ("
     qstr = [] # question marks
     fields = [] # field names
     bind_vars = [] # values to insert
-    hash.each_pair { |name, val| 
+    hash.each_pair { |name, val|
       fields << name
       bind_vars << val
       qstr << "?"
@@ -81,7 +81,7 @@ def table_insert_hash db, table, array # {{{
     str << ") values ("
     str << qstr.join(",")
     str << ");"
-    $stderr.puts "#{hash["id"]}: #{hash["imdbid"]}    #{hash["title"]} "
+    $stderr.puts "#{hash["id"]}: #{hash["imdbid"]}    #{hash["title"]} " if $opt_verbose
     #puts " #{hash["Title"]} #{hash["imdbID"]} "
     db.execute(str, bind_vars)
     #rowid = @db.get_first_value( "select last_insert_rowid();")
@@ -89,7 +89,7 @@ def table_insert_hash db, table, array # {{{
   end
 end # }}}
 def table_upsert_hash db, table, array
-  $stderr.puts "inside table_upsert_hash "
+  $stderr.puts "inside table_upsert_hash " if $opt_verbose
   array.each do |hash|
     id = hash["id"]
     imdbid = hash["imdbid"]
@@ -100,7 +100,7 @@ def table_upsert_hash db, table, array
     qstr = [] # question marks
     #fields = [] # field names
     bind_vars = [] # values to insert
-    hash.each_pair { |name, val| 
+    hash.each_pair { |name, val|
       #fields << name
       # don't allow null to overwrite data, 2018-04-12
       if val and val != "" and val != "-"
@@ -115,7 +115,7 @@ def table_upsert_hash db, table, array
     str << " WHERE imdbid = \"#{imdbid}\" ;"
     #str << ");"
     #puts str
-    $stderr.puts "#{hash["id"]}: #{hash["imdbid"]}    #{hash["title"]} "
+    $stderr.puts "#{hash["id"]}: #{hash["imdbid"]}    #{hash["title"]} " if $opt_verbose
     #puts " #{hash["Title"]} #{hash["imdbID"]} "
     db.execute(str, bind_vars) unless bind_vars.empty?
     #rowid = @db.get_first_value( "select last_insert_rowid();")
@@ -131,8 +131,8 @@ end
 
 
 # -------------- process_args ------------------------------------------------ #
-#  for each filename on command line call 
-#  --------------------------------------------------------------------------- # 
+#  for each filename on command line call
+#  --------------------------------------------------------------------------- #
 def process_args args
   args.each do |file|
     if File.exist? file
@@ -161,7 +161,7 @@ if __FILE__ == $0
         options[:verbose] = v
         $opt_verbose = v
       end
-      opts.on("--debug", "Show debug info") do 
+      opts.on("--debug", "Show debug info") do
         options[:debug] = true
         $opt_debug = true
       end
@@ -177,7 +177,7 @@ if __FILE__ == $0
     if ARGV.count == 0
       files = Dir.glob("list-movies-*.json")
       if files.count == 0
-        $stderr.puts "Can't find json files here"
+        $stderr.puts "Can't find json files here. If already run, do 'just sync' now"
         exit 1
       end
     else
@@ -195,15 +195,15 @@ if __FILE__ == $0
     exit 0
 =end
 
-    # OR 
+    # OR
     #
     # --- if processing multiple files ---------
     if files.size > 0
-      $stderr.puts "==> processing files: #{files.size}" unless $opt_quiet
+      $stderr.puts "==> processing files: #{files.size}" if $opt_verbose
       process_args files
     else
       # passed as stdin
-      $stderr.puts "   Expecting filenames passed as stdin " unless $opt_quiet
+      $stderr.puts "   Expecting filenames passed as stdin " if $opt_verbose
       $stdin.each_line do |file|
         if File.exist? file
           _process file
