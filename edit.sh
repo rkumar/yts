@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh 
+#!/usr/bin/env zsh
 
 
 
@@ -22,11 +22,11 @@ function usage ()
 {
 	cat <<- EOT
 
-  Usage :  ${0##/*/} -d movie.sqlite -t movie [options] <rowid> <column_name>
+  Usage :  ${0##/*/} -d yify.sqlite -t yify [options] <rowid> <column_name>
 
-  Options: 
-  -d, --dbname     DAtabase Name
-  -t, --tbname     TAble Name
+  Options:
+  -d, --dbname     Database Name
+  -t, --tbname     Table Name
   -h, --help       Display this message
   -v, --version    Display script version
   -V, --verbose    Display processing information
@@ -95,7 +95,7 @@ else
     echo "Got $*" 1>&2
     #echo "Got $1"
     if [[ ! -f "$DBNAME" ]]; then
-        echo "File:$1 not found" 1>&2
+        echo "File:$DBNAME not found" 1>&2
         exit 1
     fi
 fi
@@ -111,7 +111,7 @@ while [ "$1" != "" ]; do
     pbold "Row: $rowid. $col: ($TITLE)"
     # vared not working with /usr/local/bin/zsh. works with /bin/zsh
     vared TITLE
-    
+
     [[ -z "$TITLE" ]] && { echo "${X_MARK} Error: $col blank." 1>&2; exit 1; }
    #read TITLE
     sqlite3 $DBNAME "update $TBNAME set $col = '"$TITLE"' where rowid = $rowid"
