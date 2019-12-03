@@ -1,11 +1,11 @@
-#!/usr/bin/env bash 
+#!/usr/bin/env bash
 # ----------------------------------------------------------------------------- #
 #         File: search.sh
 #  Description: search for movies in YIFY torrents based on title genre and year
 #       Author: j kepler  http://github.com/mare-imbrium/canis/
 #         Date: 2018-04-09 - 09:01
 #      License: MIT
-#  Last update: 2019-02-19 14:36
+#  Last update: 2019-11-06 14:52
 # ----------------------------------------------------------------------------- #
 #  search.sh  Copyright (C) 2012-2018 j kepler
 # CHANGELOG ---
@@ -32,11 +32,14 @@ function usage ()
 {
 	cat <<- EOT
 
-  Usage :  ${0##/*/} [options] [--] args
+  Usage :  ${0##/*/} pattern
+        :  ${0##/*/} tt999999
+        :  ${0##/*/} -p 1960 1965 -g History
 
-  Options: 
+  Options:
   -t, --title      title or part of title
   -y, --year       year of release
+  -p, --period     year range of movie, inclusive
   -g, --genre      genre of movie
   -h, --help       Display this message
   -v, --version    Display script version
@@ -70,6 +73,20 @@ case "$1" in
     -y|--year)   shift
                      OPT_YEAR=$1
                      OPT_OPT=1
+                     shift
+                     ;;
+    -p|--period)   shift
+                     OPT_YEAR_FROM=$1
+                     OPT_OPT=1
+                     shift
+                     OPT_YEAR_TO=$1
+                     shift
+                     ;;
+    -r|--rating)   shift
+                     OPT_RATING_FROM=$1
+                     OPT_OPT=1
+                     shift
+                     OPT_RATING_TO=$1
                      shift
                      ;;
     -g|--genre)   shift
@@ -151,6 +168,18 @@ fi
 if [[ -n "$OPT_YEAR" ]]; then
     QUERY="$QUERY AND YEAR=$OPT_YEAR "
 fi
+if [[ -n "$OPT_YEAR_FROM" ]]; then
+    QUERY="$QUERY AND YEAR >= $OPT_YEAR_FROM "
+fi
+if [[ -n "$OPT_YEAR_TO" ]]; then
+    QUERY="$QUERY AND YEAR <= $OPT_YEAR_TO "
+fi
+if [[ -n "$OPT_RATING_FROM" ]]; then
+    QUERY="$QUERY AND RATING >= $OPT_RATING_FROM "
+fi
+if [[ -n "$OPT_RATING_TO" ]]; then
+    QUERY="$QUERY AND RATING <= $OPT_RATING_TO "
+fi
 if [[ -n "$OPT_GENRE" ]]; then
     QUERY="$QUERY AND GENRES LIKE \"%${OPT_GENRE}%\""
 fi
@@ -161,14 +190,28 @@ fi
 if [[ -n "$OPT_VERBOSE" ]]; then
     echo "QUERY: $QUERY"
 fi
-sqlite3 yify.sqlite "SELECT id, imdbid, title, year, rating, genres, url FROM yify ${QUERY} $LIMIT" | column -t -s'|' > $TMPFILE
+sqlite3 yify.sqlite "SELECT rowid, imdbid, year, rating, title, genres, url FROM yify ${QUERY} $LIMIT" | column -t -s'|' > $TMPFILE
 if [[ -n $OPT_CRON ]]; then
     cat $TMPFILE
     exit 0
 fi
 if [[ -s "$TMPFILE" ]]; then
-    most $TMPFILE
-    wc -l $TMPFILE
+    # most $TMPFILE
+    # cut -c1-80 $TMPFILE > ~/tmp/t.t
+    # selection=$(cut -c1-80 $TMPFILE | smenu -W$'\n' -n 22)
+    # smenu gives: A word's length has reached the limit (256), exiting.
+    selection=$(cut -c1-90 $TMPFILE | fzf -1 -0)
+    #echo $selection
+    if [ -n "$selection" ]; then
+        rowid=$(echo "$selection" | cut -f1 -d' ')
+        echo Rowid is $rowid
+        sqlite3 -line yify.sqlite "select * from yify where rowid = $rowid "
+        echo "------"
+        url=$(sqlite3 yify.sqlite "select url from yify where rowid = $rowid")
+        # echo $url | pbcopy
+        echo open -a Opera.app "$url"
+    fi
+    # wc -l $TMPFILE
 else
     echo "No results "
 fi
