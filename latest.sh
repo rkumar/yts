@@ -1,26 +1,30 @@
-#!/usr/bin/env bash 
+#!/usr/bin/env bash
 #===============================================================================
 #
 #          FILE: latest.sh
-# 
-#         USAGE: ./latest.sh 
-# 
+#
+#         USAGE: ./latest.sh
+#
 #   DESCRIPTION:  fetch the latest movies uploaded on y t s.
 #                 Compare to id.tsv to see which are not in our database.
 #                 Send the latest list by mail.
-# 
+#
 #       OPTIONS: --cron
 #  REQUIREMENTS: uses sponge and mail.sh
 #          BUGS: ---
 #         NOTES: ---
-#        AUTHOR: YOUR NAME (), 
-#  ORGANIZATION: 
+#        AUTHOR: YOUR NAME (),
+#  ORGANIZATION:
 #       CREATED: 04/03/2018 12:48
 #      REVISION:  2018-04-03 12:53
 #===============================================================================
 # NOTE: the data has an uploaded date, we can check that, to see what is new
 # As of 2018-04-27 wget has been failing with SSL on this site and wikipedia.
 #  `curl` giving the same SSL problem.
+#  2021-03-19 - we can also save last rowid to a file. and then pick up only
+#  those records after that rowid to send as mail.
+#  2021-03-21 - now using last rowid as point to send next email from.
+#  At processing we store last rowid in table last_rowid
 
 arg1="${1:-}"
 
@@ -51,7 +55,7 @@ function usage ()
 
   Usage :  ${0##/*/} [options] [--] args
 
-  Options: 
+  Options:
   -h, --help       Display this message
   -v, --version    Display script version
   -V, --verbose    Display processing information
@@ -105,19 +109,19 @@ date >> lastran.log
 echo "---" >> lastran.log
 
 #wget -q -O $GZ https://yts.am/api/v2/list_movies.json?limit=50
-wget --no-check-certificate -O $GZ https://yts.am/api/v2/list_movies.json?limit=50
+wget --no-check-certificate -O $GZ https://yts.mx/api/v2/list_movies.json?limit=50
 if [[ ! -s "$GZ" ]]; then
-    ## why isn't this happening  ? 2018-12-25 - 
-    echo "$GZ is blank" >> yts.log
+    ## why isn't this happening  ? 2018-12-25 -
+    echo "$GZ is blank ERROR" >> yts.log
     rm $GZ
     exit
 else
-    # added 2019-01-13 - 
-    echo "$GZ is NOT blank" >> yts.log
+    # added 2019-01-13 -
+    echo "$GZ is NOT blank - OKAY" >> yts.log
     ls -l $GZ >> yts.log
 fi
 
-## just seeing if the zero byte file comes here 2018-12-25 - 09:54 
+## just seeing if the zero byte file comes here 2018-12-25 - 09:54
 date >> lastran.log
 ls -l $GZ >> lastran.log
 
@@ -131,17 +135,30 @@ sort -u $PENDING | sponge $PENDING
 sort -n -k1 $PENDING | sponge $PENDING
 [[ -z "$OPT_CRON" ]] && wc -l $PENDING
 
+# 2021-04-26 - moved this above since we are now running sql statement from
+#  tables.
+./import.rb
+
 #tail t.new
-diff --unified $PENDING id.tsv | grep '^-\d' | cut -c2- > latest.txt
+# # 2021-03-19 - we are no longer updating id.tsv so everything is being mailed
+# diff --unified $PENDING id.tsv | grep '^-\d' | cut -c2- > latest.txt
+sqlite3 -line yify.sqlite "select title, year, rating, genres, language, imdbid, summary from yify where genres NOT LIKE '%Horror%' AND genres NOT LIKE '%Adult%' AND rowid > (select last_rowid from last_rowid) order by rowid DESC" > latest.txt
+sqlite3 yify.sqlite "delete from last_rowid;"
+sqlite3 yify.sqlite "insert into last_rowid select max(rowid) from yify;"
+
 if [[ -s "latest.txt" ]]; then
     [[ -z "$OPT_CRON" ]] && echo "Sending latest by mail"
-    cat latest.txt | column -t -s$'\t' | /Users/rahul/bin/mail.sh -s "Latest YIFY" rahul2012@gmail.com
-    [[ -z "$OPT_CRON" ]] && echo "Need to append these to id.tsv using append.sh"
+    # cat latest.txt | column -t -s$'\t' | /Users/rahul/bin/mail.sh -s "Latest YIFY" rahul2012@gmail.com
+    # 2021-03-19 - only send title with year, rating and genres
+    # # use sed G to double-space it.
+    # grep -v Horror latest.txt |  column -t -s$'|' | sed G | /Users/rahul/bin/mail.sh -s "Latest YIFY" rahul2012@gmail.com
+    # 2021-04-21 - now in line format, so cannot remove Horror
+    cat latest.txt | /Users/rahul/bin/mail.sh -s "Latest YIFY" rahul2012@gmail.com
+    # [[ -z "$OPT_CRON" ]] && echo "Need to append these to id.tsv using append.sh"
 else
     [[ -z "$OPT_CRON" ]] && echo "Nothing new added "
     #cat t.new
 fi
-[[ -z "$OPT_CRON" ]] && echo "once you have updated id.tsv using append.sh, you can delete $PENDING"
+# [[ -z "$OPT_CRON" ]] && echo "once you have updated id.tsv using append.sh, you can delete $PENDING"
 rm $PENDING
-./import.rb
 [[ -z "$OPT_CRON" ]] && echo "you must run ./import.rb $OUT"
