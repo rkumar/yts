@@ -21,7 +21,7 @@ Then it goes through the day-wise files downloaded after I downloaded all the ex
 Mainly there is an ncurses program `yify.rb` that queries the database, pulls any new title details
 that are not in our database from IMDB (using omdb).
 
-This also links to other programs I have such as the OMDB database (IMDB titles). 
+This also links to other programs I have such as the OMDB database (IMDB titles).
 
 I also update a status field in the database to indicate whether I am interested in a movie, or have seen a movie, or wish to hide a movie from showing up in the query program.
 
@@ -34,3 +34,7 @@ I don't think git takes binary files so I am not uploading the sqlite3 database.
 - ruby
 - sqlite gem
 - umbra gem (ncurses library)
+
+## Ownership
+
+Shifted from imbrium to rkumar since unable to access other repo.
