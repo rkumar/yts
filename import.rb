@@ -4,7 +4,7 @@
 #  Description: read a json file from yts containing 50 movies and insert into sqlite
 #       Author:  r kumar
 #         Date: 2018-04-03 - 12:13
-#  Last update: 2019-10-31 12:02
+#  Last update: 2021-03-09 14:06
 #      License: MIT License
 # ----------------------------------------------------------------------------- #
 # ISSUES
@@ -15,7 +15,13 @@
 #
 require 'json'
     # h = JSON.parse(str)
-require 'sqlite3'
+begin
+  require 'sqlite3'
+rescue LoadError => e
+  warn "Could not load sqlite3"
+  warn e.to_s
+  exit(1)
+end
 dbname = "yify.sqlite"
 @db = SQLite3::Database.new(dbname)
 #require 'color' # see ~/work/projects/common/color.rb
@@ -81,7 +87,7 @@ def table_insert_hash db, table, array # {{{
     str << ") values ("
     str << qstr.join(",")
     str << ");"
-    $stderr.puts "#{hash["id"]}: #{hash["imdbid"]}    #{hash["title"]} " if $opt_verbose
+    $stderr.puts "#{hash['id']}: #{hash['imdbid']}    #{hash['title']} #{hash['year']}" if $opt_verbose
     #puts " #{hash["Title"]} #{hash["imdbID"]} "
     db.execute(str, bind_vars)
     #rowid = @db.get_first_value( "select last_insert_rowid();")
@@ -115,7 +121,7 @@ def table_upsert_hash db, table, array
     str << " WHERE imdbid = \"#{imdbid}\" ;"
     #str << ");"
     #puts str
-    $stderr.puts "#{hash["id"]}: #{hash["imdbid"]}    #{hash["title"]} " if $opt_verbose
+    $stderr.puts "#{hash["id"]}: #{hash["imdbid"]}    #{hash["title"]} #{hash['year']}" if $opt_verbose
     #puts " #{hash["Title"]} #{hash["imdbID"]} "
     db.execute(str, bind_vars) unless bind_vars.empty?
     #rowid = @db.get_first_value( "select last_insert_rowid();")
