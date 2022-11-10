@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # Description: Browse YIFY database
-# Last update: 2018-08-08 11:19
+# Last update: 2021-04-10 00:05
 # 2018-03-19
 require 'umbra'
 require 'umbra/label'
@@ -28,7 +28,7 @@ def startup # {{{
   require 'date'
 
     path = File.join(ENV["LOGDIR"] || "./" ,"v.log")
-    file   = File.open(path, File::WRONLY|File::TRUNC|File::CREAT) 
+    file   = File.open(path, File::WRONLY|File::TRUNC|File::CREAT)
     $log = Logger.new(path)
     $log.level = Logger::DEBUG
     today = Time.now.to_s
@@ -46,7 +46,7 @@ def flow row, scol, *widgets # {{{
     w.col = scol
     if w.width and w.width > 0
       scol += w.width + 1
-    elsif w.text 
+    elsif w.text
       scol += w.text.length + 1
     else
       scol += 10
@@ -258,7 +258,7 @@ def edit_row lb # {{{
   data = rowdata.first
   require 'umbra/messagebox'
   require 'umbra/labeledfield'
-  
+
   array = []
   mb = MessageBox.new title: "Editing #{data.first}", width: 80 do
     data.each_with_index do |r, ix|
@@ -367,7 +367,7 @@ begin
     form = Form.new win
     boxrow = 2
     ltitle = Label.new text: "Title :", row: boxrow-1, col: 4, mnemonic: "T"
-    title  = Field.new name: "title", row: ltitle.row, col: 20, width: 20, attr: REVERSE, color_pair: CP_CYAN
+    title  = Field.new name: "title", row: ltitle.row, col: 20, width: 15, attr: REVERSE, color_pair: CP_CYAN
     lyear  = Label.new text: "Year :", row: boxrow-1, col: 4, mnemonic: "y"
     year   = Field.new name: "year", row: ltitle.row, col: 20, width: 4, attr: REVERSE, color_pair: CP_CYAN
     lyearto = Label.new text: "-", row: boxrow-1, col: 4
@@ -391,7 +391,7 @@ begin
     #lb = Listbox.new list: data
     #lb = Listbox.new list: alist
     lb = Listbox.new selection_key: 0 # Ctrl-0. We arent using selection here.
-    # this event will register after listbox has been populated the first time. That is why I am setting 
+    # this event will register after listbox has been populated the first time. That is why I am setting
     #  the list after the bind_event
     lb.bind_event(:CHANGED) { |list| box.title = "#{list.list().size} rows"; box.touch; }
     lb.list = alist
@@ -404,7 +404,7 @@ begin
     def lb.to_searchable(index)
       value_of_row(self.list[index], index, nil)
     end
-  
+
     def lb.color_of_row(index, state) # {{{
       arr = super
       if state == :NORMAL
@@ -437,7 +437,7 @@ begin
         row = self.list[index]
         status = row[-1]
         #$log.debug "#{index}.  STATUS =#{status}, row = #{row}"
-        if status == "i" 
+        if status == "i"
           smark = emptymark
 
         elsif ["x", "n"].include?(status)
@@ -564,7 +564,7 @@ ensure
   FFI::NCurses.endwin
   if e
     puts "ex4 ensure"
-    puts e 
+    puts e
     puts e.backtrace.join("\n")
         $log.debug e.to_s
         $log.debug e.backtrace.join("\n")
