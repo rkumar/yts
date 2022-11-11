@@ -38,3 +38,4 @@ I don't think git takes binary files so I am not uploading the sqlite3 database.
 ## Ownership
 
 Shifted from imbrium to rkumar since unable to access other repo.
+Checking from 2013 Monterey laptop.
